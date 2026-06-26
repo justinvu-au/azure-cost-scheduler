@@ -1,0 +1,51 @@
+name: Manual Cluster Control
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "start or stop"
+        required: true
+        type: choice
+        options: [start, stop]
+      cluster:
+        description: "Which cluster"
+        required: true
+        type: choice
+        options:
+          - plstats-aks
+          - plinfra-dev-aks
+          - plinfra-staging-aks
+          - plinfra-prod-aks
+
+jobs:
+  control:
+    name: ${{ inputs.action }} ${{ inputs.cluster }}
+    runs-on: ubuntu-latest
+    # Every manual action is gated by approval — prod and non-prod alike,
+    # since this workflow allows touching prod, the whole workflow is treated
+    # with prod-level caution rather than conditionally gating per input.
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Resolve resource group for selected cluster
+        id: resolve
+        run: |
+          case "${{ inputs.cluster }}" in
+            plstats-aks)        echo "rg=pl-stats-rg" >> "$GITHUB_OUTPUT" ;;
+            plinfra-dev-aks)     echo "rg=plinfra-dev-rg" >> "$GITHUB_OUTPUT" ;;
+            plinfra-staging-aks) echo "rg=plinfra-staging-rg" >> "$GITHUB_OUTPUT" ;;
+            plinfra-prod-aks)    echo "rg=plinfra-prod-rg" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      - name: Run action
+        run: |
+          chmod +x scripts/manage-cluster.sh
+          ./scripts/manage-cluster.sh "${{ inputs.action }}" "${{ steps.resolve.outputs.rg }}" "${{ inputs.cluster }}"
