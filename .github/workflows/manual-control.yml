@@ -14,9 +14,6 @@ on:
         type: choice
         options:
           - plstats-aks
-          - plinfra-dev-aks
-          - plinfra-staging-aks
-          - plinfra-prod-aks
 
 jobs:
   control:
@@ -40,9 +37,6 @@ jobs:
         run: |
           case "${{ inputs.cluster }}" in
             plstats-aks)        echo "rg=pl-stats-rg" >> "$GITHUB_OUTPUT" ;;
-            plinfra-dev-aks)     echo "rg=plinfra-dev-rg" >> "$GITHUB_OUTPUT" ;;
-            plinfra-staging-aks) echo "rg=plinfra-staging-rg" >> "$GITHUB_OUTPUT" ;;
-            plinfra-prod-aks)    echo "rg=plinfra-prod-rg" >> "$GITHUB_OUTPUT" ;;
           esac
 
       - name: Run action

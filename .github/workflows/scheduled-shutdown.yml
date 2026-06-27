@@ -9,8 +9,6 @@ on:
 env:
   CLUSTERS: >-
     pl-stats-rg:plstats-aks
-    plinfra-dev-rg:plinfra-dev-aks
-    plinfra-staging-rg:plinfra-staging-aks
 
 jobs:
   shutdown:
